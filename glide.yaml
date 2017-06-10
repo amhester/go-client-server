@@ -1,0 +1,9 @@
+package: github.com/amhester/go-client-server
+
+import:
+- package: github.com/grpc/grpc-go
+- package: google.golang.org/grpc
+- package: github.com/golang/protobuf/proto
+- package: golang.org/x/net
+- package: github.com/spaolacci/murmur3
+- package: github.com/amhester/go-list
