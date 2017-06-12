@@ -2,6 +2,8 @@ package game
 
 import (
 	"math/rand"
+
+	t "github.com/amhester/go-client-server/types"
 )
 
 type Enemy struct {
@@ -11,9 +13,10 @@ type Enemy struct {
 	Speed     int32
 	Dexterity int32
 	Weapons   map[string]Weapon
+	Position  t.Vector
 }
 
-func NewEnemy(name string) *Enemy {
+func NewEnemy(name string, startPos t.Vector) *Enemy {
 	return &Enemy{
 		Name:      "slime" + name,
 		Health:    4,
@@ -21,6 +24,7 @@ func NewEnemy(name string) *Enemy {
 		Speed:     1,
 		Dexterity: 1,
 		Weapons:   map[string]Weapon{},
+		Position:  startPos,
 	}
 }
 
@@ -35,4 +39,8 @@ func (e *Enemy) Attack(p *Player) (bool, int32) {
 
 func (e *Enemy) String() string {
 	return e.Name
+}
+
+func (e *Enemy) Move(v t.Vector) {
+	e.Position = e.Position.Add(v)
 }

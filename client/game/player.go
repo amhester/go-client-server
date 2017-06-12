@@ -3,6 +3,8 @@ package game
 import (
 	"fmt"
 	"math/rand"
+
+	t "github.com/amhester/go-client-server/types"
 )
 
 type Weapon struct {
@@ -14,7 +16,7 @@ type Player struct {
 	Level     int32
 	Exp       int64
 	NextLevel int64
-	Position  []int32
+	Position  t.Vector
 	Health    int32
 	Power     int32
 	Speed     int32
@@ -28,7 +30,7 @@ func NewPlayer(user, pass string) *Player {
 		Level:     1,
 		Exp:       0,
 		NextLevel: 10,
-		Position:  []int32{0, 0, 0},
+		Position:  t.Vector{0, 0, 0},
 		Health:    10,
 		Power:     3,
 		Speed:     4,
@@ -53,6 +55,10 @@ func (p *Player) Attack(weapon string, e *Enemy) (bool, int32) {
 		return true, damage
 	}
 	return false, 0
+}
+
+func (p *Player) Move(v t.Vector) {
+	p.Position = p.Position.Add(v)
 }
 
 func (p *Player) AddExp(e int64) bool {
