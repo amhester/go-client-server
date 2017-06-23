@@ -66,9 +66,8 @@ func (server *CommandServer) prompt(p string) {
 }
 
 func (server *CommandServer) handleCommand(input string) string {
-	fmt.Println(input)
+	server.Face.Println(input)
 	command, args := parseCommand(input)
-	fmt.Println(args)
 	if fn, ok := handlerMap[command]; ok {
 		res, err := fn(args...)
 		if err != nil {
