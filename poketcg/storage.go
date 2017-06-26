@@ -2,6 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
+
+	"io/ioutil"
+	"regexp"
 
 	"github.com/boltdb/bolt"
 )
@@ -16,7 +21,7 @@ type LocalStorage struct {
 }
 
 func NewLocalStorage(file string) (*LocalStorage, error) {
-	db, err := bolt.Open("my.db", 0600, nil)
+	db, err := bolt.Open("my.db", 0644, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -48,4 +53,49 @@ func (ls *LocalStorage) AddDeck(d *Deck) error {
 		return err
 	})
 	return err
+}
+
+func (ls *LocalStorage) GetDeck(name string) (*Deck, error) {
+	var raw []byte
+	err := ls.db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket(deckBucket)
+		if bucket == nil {
+			return fmt.Errorf("Bucket %q not found!", deckBucket)
+		}
+		raw = bucket.Get([]byte(name))
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(raw) == 0 {
+		return nil, errors.New("No deck found")
+	}
+	deck := &Deck{}
+	err = json.Unmarshal(raw, deck)
+	if err != nil {
+		return nil, err
+	}
+	return deck, nil
+}
+
+func (ls *LocalStorage) ImportDeck(filePath string) error {
+	extTest := regexp.MustCompile(`\.json$`)
+	if extTest.Match([]byte(filePath)) == false {
+		return errors.New("Can only import files of type json.")
+	}
+	raw, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+	deck := &Deck{}
+	err = json.Unmarshal(raw, deck)
+	if err != nil {
+		return err
+	}
+	err = ls.AddDeck(deck)
+	if err != nil {
+		return err
+	}
+	return nil
 }

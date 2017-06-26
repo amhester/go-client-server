@@ -12,9 +12,10 @@ func InitSeed() {
 }
 
 type Card struct {
-	Id      string   `json:"id"`
-	Name    string   `json:"name"`
-	Details []string `json:"details"`
+	Id          string   `json:"id"`
+	Name        string   `json:"name"`
+	Details     []string `json:"details"`
+	Attachments *Deck    `json:"-"`
 }
 
 func (c *Card) String() string {
@@ -26,7 +27,7 @@ func (c *Card) ShortString() string {
 }
 
 func (c *Card) LongString() string {
-	return fmt.Sprintf("ID: %s\nName: %s\nDetails: %s", c.Id, c.Name, strings.Join(c.Details, "\n"))
+	return fmt.Sprintf("ID: %s\nName: %s\nDetails: %s\nAttachments: %s", c.Id, c.Name, strings.Join(c.Details, "\n"), c.Attachments.List())
 }
 
 type Deck struct {
@@ -49,8 +50,8 @@ func (d *Deck) String() string {
 
 func (d *Deck) List() string {
 	ret := ""
-	for _, c := range d.Cards {
-		ret = fmt.Sprintf("%s%s\t", ret, c.ShortString())
+	for idx, c := range d.Cards {
+		ret = fmt.Sprintf("%s[%d] %s\t", ret, idx, c.ShortString())
 	}
 	return ret
 }
