@@ -21,8 +21,8 @@ type Player struct {
 	Prizes  *Deck
 	Discard *Deck
 	Bench   *Deck
-	Active  *Card
-	Stadium *Card
+	Active  *Deck
+	Stadium *Deck
 }
 
 type Game struct {
@@ -47,6 +47,9 @@ func (g *Game) Start(args ...string) (string, error) {
 			return fmt.Sprintf("%s needs a deck", name), nil
 		}
 		deck, err := g.ls.GetDeck(args[i+1])
+		for _, c := range deck.Cards {
+			c.Attachments = &Deck{Cards: []*Card{}}
+		}
 		if err != nil {
 			return "", err
 		}
@@ -57,6 +60,8 @@ func (g *Game) Start(args ...string) (string, error) {
 			Prizes:  &Deck{Id: "", Cards: []*Card{}, Name: "Prizes"},
 			Discard: &Deck{Id: "", Cards: []*Card{}, Name: "Discard"},
 			Bench:   &Deck{Id: "", Cards: []*Card{}, Name: "Bench"},
+			Active:  &Deck{Id: "", Cards: []*Card{}, Name: "Active"},
+			Stadium: &Deck{Id: "", Cards: []*Card{}, Name: "Stadium"},
 		})
 	}
 	if len(players) < 1 || len(players) > 2 {
@@ -133,6 +138,8 @@ func (g *Game) turn() (bool, error) {
 					fmt.Println(p.Hand.List())
 				case "bench":
 					fmt.Println(p.Bench.List())
+				case "active":
+					fmt.Println(p.Active.List())
 				}
 				continue
 			}
@@ -149,6 +156,8 @@ func (g *Game) turn() (bool, error) {
 					deck_ = p.Hand
 				case "bench":
 					deck_ = p.Bench
+				case "active":
+					deck_ = p.Active
 				}
 				which, err := strconv.ParseInt(args[1], 10, 64)
 				if err != nil {
@@ -161,6 +170,8 @@ func (g *Game) turn() (bool, error) {
 				}
 				fmt.Println(deck_.Cards[int(which)].LongString())
 			}
+		case "shuffle":
+			p.Deck.Shuffle()
 		case "move":
 			swapDecks := make([]*Deck, 2)
 			deckStrs := []string{
@@ -184,6 +195,8 @@ func (g *Game) turn() (bool, error) {
 					swapDecks[idx] = p.Hand
 				case "bench":
 					swapDecks[idx] = p.Bench
+				case "active":
+					swapDecks[idx] = p.Active
 				}
 			}
 			if swapDecks[0] == nil || swapDecks[1] == nil {
@@ -207,7 +220,7 @@ func (g *Game) turn() (bool, error) {
 				continue
 			}
 			if target == -1 {
-				p.Hand.Move(int(source), p.Active.Attachments)
+				p.Hand.Move(int(source), p.Active.Cards[0].Attachments)
 				continue
 			}
 			if len(p.Bench.Cards) <= int(target) {
