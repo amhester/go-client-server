@@ -1,0 +1,217 @@
+syntax = "proto3";
+package empire.api.service;
+
+service EmpireService {
+    rpc Register(RegisterRequest) returns (RegisterResponse) {}
+    rpc SignIn(SignInRequest) returns (SignInResponse) {}
+    rpc ListPlayers(ListPlayersRequest) returns (ListPlayersResponse) {}
+    rpc SubscribeNotifications(SubscribeNotificationsRequest) returns (stream NotificationsResponse) {}
+    rpc UnsubscribeNotifications(UnsubscribeNotificationsRequest) returns (ResponseHeaders) {}
+    rpc GameRequest(GameRequestRequest) returns (ResponseHeaders) {}
+    rpc AcceptGameRequest(GameRequestResponse) returns (ResponseHeaders) {}
+    rpc DeclineGameRequest(GameRequestResponse) returns (ResponseHeaders) {}
+    rpc StartGame(StartGameRequest) returns (StartGameResponse) {}
+    rpc RegisterGameStateChanges(stream GameStateChangeRequest) returns (stream GameStateChangeResponse) {}
+    rpc FinishGame(FinishGameRequest) returns (FinishGameResponse) {}
+}
+
+message RequestHeaders {
+    string clientID = 1;
+    int64 timestamp = 2;
+}
+
+message ResponseHeaders {
+    string serverID = 1;
+    int64 timestamp = 2;
+}
+
+message RegisterRequest {
+    RequestHeaders headers = 1;
+    Profile profile = 2;
+}
+
+message RegisterResponse {
+    ResponseHeaders headers = 1;
+    Profile profile = 2;
+}
+
+message SignInRequest {
+    RequestHeaders headers = 1;
+    string username = 2;
+    string password = 3;
+}
+
+message SignInResponse {
+    ResponseHeaders headers = 1;
+    Profile profile = 2;
+}
+
+message ListPlayersRequest {
+    RequestHeaders headers = 1;
+}
+
+message ListPlayersResponse {
+    ResponseHeaders headers = 1;
+    repeated Profile profile = 2;
+}
+
+message SubscribeNotificationsRequest {
+    RequestHeaders headers = 1;
+    Profile profile = 2;
+}
+
+message NotificationsResponse {
+    ResponseHeaders headers = 1;
+    string notificationID = 2;
+    string message = 3;
+    NotificationType notificationType = 4;
+}
+
+message UnsubscribeNotificationsRequest {
+    RequestHeaders headers = 1;
+    Profile profile = 2;
+}
+
+message GameRequestRequest {
+    RequestHeaders headers = 1;
+    Profile profile = 2;
+    string requestProfileID = 3;
+}
+
+message GameRequestResponse {
+    RequestHeaders headers = 1;
+    Profile profile = 2;
+    string gameRequestID = 3;
+    bool accepted = 4;
+}
+
+message StartGameRequest {
+    RequestHeaders headers = 1;
+    Profile profile = 2;
+    string gameID = 3;
+}
+
+message StartGameResponse {
+    ResponseHeaders headers = 1;
+    string gameID = 2;
+    Game game = 3;
+}
+
+message GameStateChangeRequest {
+    RequestHeaders headers = 1;
+    Profile profile = 2;
+    Game state = 3;
+}
+
+message GameStateChangeResponse {
+    ResponseHeaders headers = 1;
+    Game state = 2;
+}
+
+message FinishGameRequest {
+    RequestHeaders headers = 1;
+    Profile profile = 2;
+    string gameID = 3;
+}
+
+message FinishGameResponse {
+    ResponseHeaders headers = 1;
+}
+
+message Profile {
+    string id = 1;
+    string name = 2;
+    string email = 3;
+    string username = 4;
+    int64 createdOn = 5;
+    int64 updatedOn = 6;
+    int64 lastOnline = 7;
+}
+
+enum NotificationType {
+    NoneNotification = 0;
+    Announcement = 1;
+    DirectMessage = 2;
+    GameRequest = 3;
+    GameRequestAccepted = 4;
+    GameRequestDeclined = 5;
+}
+
+message Game {
+    string gameID = 1;
+    int64 startTime = 2;
+    int64 endTime = 3;
+    Player player = 4;
+    repeated Player opponents = 5;
+    int32 turn = 6;
+    Deck mainDeck = 7;
+    Deck armory = 8;
+    Deck bank = 9;
+    Deck market = 10;
+    Deck starzone = 11;
+    Deck discard = 12;
+    Deck marketLineup = 13;
+}
+
+message Deck {
+    string deckID = 1;
+    string name = 2;
+    repeated Card cards = 3;
+}
+
+message Card {
+    string cardID = 1;
+    string name = 2;
+    string description = 3;
+}
+
+message Player {
+    string playerID = 1;
+    Profile profile = 2;
+    Character character = 3;
+    Tower tower = 4;
+    Deck hand = 5;
+    Deck played = 6;
+    Deck equipment = 7;
+    int64 status = 8;
+}
+
+enum PlayerStatus {
+    NonePlayerStatus = 0;
+    IsActive = 1;
+    HasSpecial = 2;
+    HasElement = 3;
+    HasAbility = 4;
+    CanPurchasePieces = 5;
+    CanPurchaseEquipment = 6;
+    CanStealPiece = 7;
+}
+
+message Tower {
+    repeated TowerBlock base = 1;
+    repeated TowerBlock mid = 2;
+    repeated TowerBlock top = 3;
+}
+
+message TowerBlock {
+    int32 value = 1;
+}
+
+message Character {
+    string characterID = 1;
+    string name = 2;
+    string description = 3;
+    ElementType element = 4;
+}
+
+enum ElementType {
+    NoneElement = 0;
+    Fire = 1;
+    Water = 2;
+    Wind = 3;
+    Earth = 4;
+    Lightning = 5;
+    Shadow = 6;
+    Light = 7;
+    Ice = 8;
+}
